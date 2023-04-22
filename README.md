@@ -16,10 +16,10 @@ The objective of this project is to build a basic inventory management system th
 
 ## Screenshots
 
-- Login Page <br><img src="https://github.com/robinsingh051/car_showroom_management_system/blob/master/screenshots/login.png width="560" height="320"><br>
-- Admin dashboard <br><img src="https://github.com/robinsingh051/car_showroom_management_system/blob/master/screenshots/showroom%20dashboard.png width="560" height="320"><br>
-- Customer dashboard <br><img src="https://github.com/robinsingh051/car_showroom_management_system/blob/master/screenshots/custmer%20dashboard.png width="560" height="320"><br>
-- Products Manage page <br><img src="https://github.com/robinsingh051/car_showroom_management_system/blob/master/screenshots/test%20ride%20booking.png width="560" height="320"><br>
+- Login Page <br><img src="https://github.com/robinsingh051/inventory-management/blob/main/static/imgs/login.png" width="560" height="320"><br>
+- Admin dashboard <br><img src="https://github.com/robinsingh051/inventory-management/blob/main/static/imgs/admin%20dashboard.png" width="560" height="320"><br>
+- Customer dashboard <br><img src="https://github.com/robinsingh051/inventory-management/blob/main/static/imgs/customer%20dashboard.png" width="560" height="320"><br>
+- Products Manage page <br><img src="https://github.com/robinsingh051/inventory-management/blob/main/static/imgs/manage.png" width="560" height="320"><br>
 
 
 ## Run Locally
