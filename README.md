@@ -67,7 +67,7 @@ Start the server
 [<img src="https://vuejs.org/images/logo.png" width="50" height="30">](https://vuejs.org/)
 [<img src="https://www.w3.org/html/logo/downloads/HTML5_Logo_256.png" width="50" height="30">](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [<img src="https://bulma.io/images/bulma-logo.png" width="50" height="30">](https://bulma.io/)
-[<img src="https://sweetalert2.github.io/assets/sweetalert2-logo.png" width="50" height="30">](https://sweetalert2.github.io/images/SweetAlert2.png)
+[<img src="https://sweetalert2.github.io/images/SweetAlert2.png" width="50" height="30">](https://sweetalert2.github.io/)
 [<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Unofficial_JavaScript_logo_2.svg/2560px-Unofficial_JavaScript_logo_2.svg.png" width="50" height="30">](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 
 

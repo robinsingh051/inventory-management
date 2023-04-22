@@ -1,0 +1,44 @@
+<%- include('partials/head',{page: ""}) %>
+
+<canvas id="myChart" style="width:100%;max-width:900px"></canvas>
+<div>
+  <form action="/admin/export" method="post">
+    <button class="button is-block is-info is-medium" style="background-color: #213a62;float: right;margin-right: 30px;" type="submit">Export Data</button>
+</form>
+</div>
+<script>
+  var xValues = [];
+  var yValues = [];
+  var barColors = [];
+  <% for (const product of products) { %>
+    xValues.push("<%- product.name %>");
+    yValues.push(<%= product.stock %>);
+    <% if (parseInt(product.stock) >= 70) { %>
+      barColors.push("#008450");
+    <% } else if (parseInt(product.stock) >= 20) { %>
+      barColors.push("#EFB700");
+    <% } else { %>
+      barColors.push("#B81D13");
+    <% } %>
+  <% } %>
+  new Chart("myChart", {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      legend: {display: false},
+      title: {
+        display: true,
+        text: "Available Stocks"
+      }
+    }
+  });
+</script>     
+<%- include('partials/foot') %>
+
+              

@@ -1,0 +1,15 @@
+.prod  {
+    min-height: 250px;
+    text-align: center;
+}
+.prod:hover  {
+    border: 1px rgb(46, 46, 46) solid;
+    transform: scale(1.05);
+    transition: transform ease-in 150ms;
+}
+.prod .card-content {
+    height: 170px;
+}
+.navbar{
+    background: linear-gradient(to right, #F2E9FF, #FEECF1);
+}
