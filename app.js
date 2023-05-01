@@ -137,13 +137,11 @@ app.post("/register", function (req, res) {
 // Item page
 app.get("/item/:id", function (req, res) {
   res.locals.user = req.session.user;
-
   connection.query(
     `SELECT * from products where id=${req.params.id}`,
     function (error, results, fields) {
       if (error) throw error;
       // res.send(results)
-
       if (results.length > 0) {
         res.render("items", {
           product: results[0],
@@ -154,39 +152,43 @@ app.get("/item/:id", function (req, res) {
     }
   );
 });
+
 //buy
 app.post("/buy", function (req, res) {
-  // res.send({...req.body, user:{...req.session.user}})
-  let account = req.session.user;
-  let order = req.body;
-  let price;
-  connection.query(`select price from products where id=${order.product}`,
-  function (error, results, fields) {
-    if (!error){
-      price=parseInt(results[0].price);
-      bill_amount=price*order.qty;
-      connection.query(
-        `insert into orders(pid,uid,qty,bill_amount) values("${order.product}","${account.id}",${order.qty},${bill_amount})`,
-        function (err, rows, fields) {
-          if (!err) {
-            connection.query(
-              `UPDATE products set stock = stock - ${order.qty} where id=${order.product}`,
-              function (error, results, fieldss) {
-                if (!error) console.log("Successfully purchased");
-                res.redirect("/orders");
-              }
-            );
-          } else {
-            console.log("error in purchase");
+  if (req.session.user){
+    let account = req.session.user;
+    let order = req.body;
+    let price;
+    connection.query(`select price from products where id=${order.product}`,
+    function (error, results, fields) {
+      if (!error){
+        price=parseInt(results[0].price);
+        bill_amount=price*order.qty;
+        connection.query(
+          `insert into orders(pid,uid,qty,bill_amount) values("${order.product}","${account.id}",${order.qty},${bill_amount})`,
+          function (err, rows, fields) {
+            if (!err) {
+              connection.query(
+                `UPDATE products set stock = stock - ${order.qty} where id=${order.product}`,
+                function (error, results, fieldss) {
+                  if (!error) console.log("Successfully purchased");
+                  res.redirect("/orders");
+                }
+              );
+            } else {
+              console.log("error in purchase");
+            }
           }
-        }
-      );
+        );
+      }
+      else console.log("error in price finding");
     }
-    else console.log("error in price finding");
+    );
   }
-  );
-  
+  else
+  res.redirect("/login");
 });
+
 // customer orders page
 app.get("/orders", function (req, res) {
   if (req.session.user) {
@@ -203,9 +205,10 @@ app.get("/orders", function (req, res) {
       }
     );
   } else {
-    res.redirect("/404");
+    res.redirect("/login");
   }
 });
+
 //confirm orders
 app.get("/orders/:id/confirm", function (req, res) {
   if (req.session.user) {
@@ -220,24 +223,10 @@ app.get("/orders/:id/confirm", function (req, res) {
       }
     );
   } else {
-    res.redirect("/404");
+    res.redirect("/login");
   }
 });
 
-//register a user manually
-app.get("/secretreg", function (req, res) {
-  let pwwd = pwHash("password");
-  connection.query(
-    `insert into customers(username, password) values('john', '${pwwd}')`,
-    function (err, rows, fields) {
-      if (!err) console.log("Added User: ", rows);
-      else {
-        throw err;
-        console.log("Error while performing Query.");
-      }
-    }
-  );
-});
 //register an Admin manually
 app.get("/secretadminreg", function (req, res) {
   let pwwd = pwHash("password");
@@ -258,35 +247,28 @@ app.get("/logout", (req, res) => {
   req.session.destroy();
   res.redirect("/");
 });
-//log out
-app.get("/404", (req, res) => {
-  res.render("404");
-});
 
 // ****************
 //     Admin Views
 
 // ****************
+
 //login page
 app.get("/admin", (req, res) => {
   res.render("admin/login", { title: "Admin Login" });
 });
+
 //login script
 app.post("/admin", function (req, res) {
   console.log(req.body);
   let usr = req.body;
-  // res.render('login', {title: "Failed! Try again", failed: true});
-
   connection.query(
     `SELECT * from admins where username="${usr.uname}"`,
     function (err, rows, fields) {
       if (!err) {
         console.log("The solution is: ", rows[0]);
-
-        if (
-          typeof rows[0] != "undefined" &&
-          pwVerify(usr.pwd, rows[0].password)
-        ) {
+        if (typeof rows[0] != "undefined" && pwVerify(usr.pwd, rows[0].password)) 
+        {
           console.log("Successful Login");
           req.session.admin = {
             id: rows[0].id,
@@ -303,6 +285,7 @@ app.post("/admin", function (req, res) {
     }
   );
 });
+
 //admin dashboard
 app.get("/admin/dashboard", function (req, res) {
   if (req.session.admin) {
@@ -322,6 +305,7 @@ app.get("/admin/dashboard", function (req, res) {
   }
 });
 
+//data export in form of csv file
 app.post('/admin/export', (req, res) => {
   if (req.session.admin) {
     res.locals.admin = req.session.admin;
@@ -383,6 +367,7 @@ app.get("/admin/orders", function (req, res) {
     res.redirect("/admin");
   }
 });
+
 //view completed sales
 app.get("/admin/sales", function (req, res) {
   if (req.session.admin) {
@@ -422,25 +407,34 @@ app.get("/admin/manage", function (req, res) {
   }
 });
 
-//edit product stock (not at all safe!!!!)
+//edit product stock
 app.get("/stock/update/:id/:newval", function (req, res) {
-  connection.query(
-    `UPDATE products set stock = ${req.params.newval} where id=${req.params.id}`,
-    function (error, results, fields) {
-      if (error) throw error;
-      res.send("{updated}");
-    }
-  );
+  if (req.session.admin) {
+    connection.query(
+      `UPDATE products set stock = ${req.params.newval} where id=${req.params.id}`,
+      function (error, results, fields) {
+        if (error) throw error;
+        res.send("{updated}");
+      }
+    );
+  } else {
+    res.redirect("/admin");
+  }
 });
-
+ 
+//edit product price
 app.get("/price/update/:id/:newval", function (req, res) {
-  connection.query(
-    `UPDATE products set price = ${req.params.newval} where id=${req.params.id}`,
-    function (error, results, fields) {
-      if (error) throw error;
-      res.send("{updated}");
-    }
-  );
+  if (req.session.admin) {
+    connection.query(
+      `UPDATE products set price = ${req.params.newval} where id=${req.params.id}`,
+      function (error, results, fields) {
+        if (error) throw error;
+        res.send("{updated}");
+      }
+    );
+  }else {
+    res.redirect("/admin");
+  }
 });
 
 //add new Product for admin
@@ -460,22 +454,15 @@ app.post("/admin/new", function (req, res) {
   if (Object.keys(req.files).length == 0) {
     return res.status(400).send("No files were uploaded.");
   }
-
   // The name of the input field
   let imgFile = req.files.image;
-
   let imgUnique = uniqueString();
-
   let imgUrl = "/static/uploads/" + imgUnique + ".jpg";
-
   let data = req.body;
-
   // Use the mv() method to move to a place in server
   imgFile.mv(__dirname + imgUrl, function (err) {
     if (err) return res.status(500).send(err);
-
     // res.send('File uploaded!');
-
     connection.query(
       `INSERT into products(name,descr,price,stock,picture) values('${data.name}','${data.descr}','${data.price}', '${data.stock}','${imgUnique}.jpg')`,
       function (error, results, fields) {
@@ -486,7 +473,7 @@ app.post("/admin/new", function (req, res) {
   });
 });
 
-//add new Product for admin
+//Edit Product for admin
 app.get("/admin/edit/:id", function (req, res) {
   if (req.session.admin) {
     res.locals.admin = req.session.admin;
@@ -504,10 +491,11 @@ app.get("/admin/edit/:id", function (req, res) {
     res.redirect("/admin");
   }
 });
-//add new Product for admin not safe!!!
+
+//post request for edit product for admin
 app.post("/admin/edit/:id", function (req, res) {
   let data = req.body;
-  if (Object.keys(req.files).length == 0) {
+  if (!req.files || Object.keys(req.files).length === 0) {
     connection.query(
       `UPDATE products set name='${data.name}', descr = '${data.descr}', stock=${data.stock}, price = ${data.price} where id=${req.params.id}`,
       function (error, results, fields) {
@@ -518,15 +506,11 @@ app.post("/admin/edit/:id", function (req, res) {
   } else {
     // The name of the input field
     let imgFile = req.files.image;
-
     let imgUnique = uniqueString();
-
     let imgUrl = "/static/uploads/" + imgUnique + ".jpg";
-
     // Use the mv() method to move to a place in server
     imgFile.mv(__dirname + imgUrl, function (err) {
       if (err) return res.status(500).send(err);
-
       connection.query(
         `UPDATE products set name='${data.name}', descr = '${data.descr}', stock=${data.stock}, price = ${data.price}, picture='${imgUnique}.jpg' where id=${req.params.id}`,
         function (error, results, fields) {
@@ -537,6 +521,13 @@ app.post("/admin/edit/:id", function (req, res) {
     });
   }
 });
+
+// Handling non matching request from the client
+app.use((req, res, next) => {
+  res.status(404).render("404", {
+    title: "404",
+  })
+})
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
