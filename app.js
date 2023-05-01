@@ -209,24 +209,6 @@ app.get("/orders", function (req, res) {
   }
 });
 
-//confirm orders
-app.get("/orders/:id/confirm", function (req, res) {
-  if (req.session.user) {
-    res.locals.user = req.session.user;
-    connection.query(
-      `update orders set status="delivered" where id = ${req.params.id}`,
-      function (err, results, fields) {
-        if (!err) {
-          console.log(results);
-          res.redirect("/orders");
-        }
-      }
-    );
-  } else {
-    res.redirect("/login");
-  }
-});
-
 //register an Admin manually
 app.get("/secretadminreg", function (req, res) {
   let pwwd = pwHash("password");
@@ -258,7 +240,7 @@ app.get("/admin", (req, res) => {
   res.render("admin/login", { title: "Admin Login" });
 });
 
-//login script
+//Admin login route
 app.post("/admin", function (req, res) {
   console.log(req.body);
   let usr = req.body;
@@ -365,6 +347,24 @@ app.get("/admin/orders", function (req, res) {
     );
   } else {
     res.redirect("/admin");
+  }
+});
+
+//confirm orders
+app.get("/orders/:id/confirm", function (req, res) {
+  if (req.session.admin) {
+    res.locals.admin = req.session.admin;
+    connection.query(
+      `update orders set status="delivered" where id = ${req.params.id}`,
+      function (err, results, fields) {
+        if (!err) {
+          console.log(results);
+          res.redirect("/admin/sales");
+        }
+      }
+    );
+  } else {
+    res.redirect("/login");
   }
 });
 
