@@ -3,7 +3,8 @@ var session = require("express-session");
 var mysql = require("mysql");
 const fileUpload = require("express-fileupload");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-
+const nodemailer = require('nodemailer');
+const path = require('path');
 const uniqueString = require("unique-string");
 
 var app = express();
@@ -18,6 +19,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const bcrypt = require("bcryptjs");
+const { accessSync } = require("fs");
 
 var pwHash = (pwd) => {
   return bcrypt.hashSync(pwd, 10);
@@ -38,7 +40,7 @@ var connection = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "",
-  database: "inventory_database",
+  database: "inventory_database"
 });
 
 connection.connect(function (err) {
@@ -156,7 +158,7 @@ app.get("/item/:id", function (req, res) {
 //buy
 app.post("/buy", function (req, res) {
   if (req.session.user){
-    let account = req.session.user;
+    let account = req.session.user;  
     let order = req.body;
     let price;
     connection.query(`select price from products where id=${order.product}`,
@@ -172,6 +174,69 @@ app.post("/buy", function (req, res) {
                 `UPDATE products set stock = stock - ${order.qty} where id=${order.product}`,
                 function (error, results, fieldss) {
                   if (!error) console.log("Successfully purchased");
+
+                  //order confirmation email
+                  
+                  const orderDetails = {
+                    customerEmail: account.username,
+                    orderDesc: order.desc,
+                    orderItem: order.prodname,
+                    orderPerPrice: price,
+                    orderTotal: bill_amount,
+                    orderQuantity: order.qty,
+                    orderPic: order.prodpic
+                  };
+
+                  const transporter = nodemailer.createTransport({
+                    host: 'smtp.gmail.com',
+                    port: 465,
+                    secure: true,
+                    auth: {
+                      user: 'baskin.notif@gmail.com',
+                      pass: 'kgjtkdyobgffnqjg',
+                      authMethod: 'LOGIN'
+                    }
+                  });
+
+                  img_path=path.join("static/uploads/",`${orderDetails.orderPic}`)
+
+                  const mailConfirm = {
+                    from: 'baskin.notif@gmail.com',
+                    to: orderDetails.customerEmail,
+                    subject: 'Your ice cream is on your way!',
+                    html: `
+                      <html>
+                        <head>
+                          <h1>Your Ice Cream is on your way!</h1>
+                        </head>
+                        <body>
+                          <p>Ice Cream: ${orderDetails.orderItem}</p>
+                          <img src="cid:image" />
+                          <br>
+                          <p>Description: ${orderDetails.orderDesc}</p>
+                          <p>Price: ${orderDetails.orderPerPrice}</p>
+                          <p>Quantity: ${orderDetails.orderQuantity}</p>
+                          <p>Total Bill: ${orderDetails.orderTotal}</p>
+                        </body>
+                      </html>
+                    `,
+                    attachments: [
+                      {
+                        filename: `${orderDetails.orderPic}`,
+                        path: img_path,
+                        cid: 'image'
+                      }
+                    ]
+                  };
+
+                  transporter.sendMail(mailConfirm, (error, info) => {
+                    if (error) {
+                      console.log(error);
+                    } else {
+                      console.log('Email sent: ' + info.response);
+                    }
+                  });
+
                   res.redirect("/orders");
                 }
               );

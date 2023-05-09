@@ -30,6 +30,9 @@ if(locals.user) {
             <h2 class="subtitle is-5 has-text-grey-light" style="font-weight: bold;">&#8377;<%=product.price %></h2>
             <form method="post" action="/buy">
             <input type="hidden" name="product" value="<%-product.id %>">
+            <input type="hidden" name="desc" value="<%-product.descr %>">
+            <input type="hidden" name="prodname" value="<%-product.name %>">
+            <input type="hidden" name="prodpic" value="<%-product.picture %>">
             <div class="field has-addons">
                     <div class="control">
                             <a class="button" @click="qty<=1? 1 : --qty">
