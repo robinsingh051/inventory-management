@@ -236,7 +236,6 @@ app.post("/buy", function (req, res) {
                       console.log('Email sent: ' + info.response);
                     }
                   });
-
                   res.redirect("/orders");
                 }
               );
@@ -584,6 +583,22 @@ app.post("/admin/edit/:id", function (req, res) {
         }
       );
     });
+  }
+});
+
+//Delete Product for admin
+app.delete("/product/delete/:id", function (req, res) {
+  if (req.session.admin) {
+    res.locals.admin = req.session.admin;
+    connection.query(
+      "DELETE FROM products WHERE id=" + req.params.id,
+      function (error, results, fields) {
+        if (error) throw error;
+        res.send("{deleted}");
+      }
+    );
+  } else {
+    res.redirect("/admin");
   }
 });
 
