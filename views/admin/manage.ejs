@@ -43,10 +43,11 @@
           el: "#app",
           data: {
             <% products.forEach((item, index) => { %>
-              d<%-index %>: {
-                stock: <%- item.stock %>,
-                price: <%- item.price %>
-              },
+            d<%-index %>: {
+              name: "<%- item.name %>",
+              stock: <%- item.stock %>,
+              price: <%- item.price %>
+            },
             <% }) %>
           },
           methods: {
@@ -111,21 +112,22 @@
             confirmDelete(id, did) {
               swal({
                 title: 'Confirm Deletion',
-                text: 'Are you sure you want to delete this product?',
+                text: `Are you sure you want to remove ${this[did].name} ?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Confirm',
                 dangerMode: true
               }).then((result) => {
-                  if (result.value) {  // Check if the confirm button is pressed
-                    this.deleteProduct(id, did);
-                  }
+                if (result.value) {
+                  // Check if the confirm button is pressed
+                  this.deleteProduct(id, did);
+                }
               });
             },
             deleteProduct(id, did) {
               fetch(`<%-baseUrl%>/product/delete/${id}`, {
-                method: 'DELETE'
-              })
+                  method: 'DELETE'
+                })
                 .then(response => {
                   if (!response.ok) {
                     throw new Error(response.statusText);
@@ -141,5 +143,5 @@
             }
           }
         });
-      </script>
+        </script>
 <%- include('partials/foot') %>
