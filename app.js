@@ -9,7 +9,7 @@ const uniqueString = require("unique-string");
 
 var app = express();
 
-app.use(session({ secret: "ssshhhhh!" }));
+app.use(session({ secret: "secret" }));
 
 app.use(fileUpload());
 
@@ -19,7 +19,6 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const bcrypt = require("bcryptjs");
-const { accessSync } = require("fs");
 
 var pwHash = (pwd) => {
   return bcrypt.hashSync(pwd, 10);
@@ -57,7 +56,6 @@ app.set("view engine", "ejs");
 // homepage
 app.get("/", function (req, res) {
   res.locals.user = req.session.user;
-
   connection.query("SELECT * from products", function (error, results, fields) {
     if (error) throw error;
     res.render("index", {
@@ -66,15 +64,15 @@ app.get("/", function (req, res) {
     });
   });
 });
+
 //login
 app.get("/login", function (req, res) {
   res.render("login", { title: "Login" });
 });
+
 app.post("/login", function (req, res) {
   console.log(req.body);
   let usr = req.body;
-  // res.render('login', {title: "Failed! Try again", failed: true});
-
   connection.query(
     `SELECT * from customers where username="${usr.uname}"`,
     function (err, rows, fields) {
@@ -261,7 +259,6 @@ app.get("/orders", function (req, res) {
       `select orders.id as oid,pid,uid,qty,status,date,name,picture,bill_amount from orders,products where uid = ${req.session.user.id} and orders.pid=products.id`,
       function (err, results, fields) {
         if (!err) {
-          console.log(results);
           res.render("orders", {
             orders: results,
           });
